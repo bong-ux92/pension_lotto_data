@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import os
 
 def get_latest_pension_result():
     try:
@@ -9,21 +10,20 @@ def get_latest_pension_result():
         res = requests.get(url, headers=headers)
         soup = BeautifulSoup(res.text, 'html.parser')
 
-        # 1. 회차 정보 추출 (String -> Int 변환)
-        draw_no = int(soup.select_one('.win_result h4 strong').text.replace('회', '').strip())
+        # 데이터 추출 (데이터가 없으면 여기서 에러가 나도록 설계)
+        draw_no_element = soup.select_one('.win_result h4 strong')
+        if not draw_no_element:
+            raise Exception("회차 정보를 찾을 수 없습니다. 사이트 구조를 확인하세요.")
+            
+        draw_no = int(draw_no_element.text.replace('회', '').strip())
         
-        # 2. 1등 당첨 번호 추출
         win_area = soup.select('.win720_num .num span')
-        # '조' 정보 (String -> Int 변환)
         group = int(win_area[0].text.replace('조', '').strip())
-        # 6자리 번호 (String -> Int 리스트 변환)
         numbers = [int(span.text.strip()) for span in win_area[1:7]]
 
-        # 3. 보너스 번호 추출 (String -> Int 리스트 변환)
         bonus_area = soup.select('.win720_num_bonus .num span')
         bonus_numbers = [int(span.text.strip()) for span in bonus_area]
 
-        # 4. 유저님의 앱 규격에 완벽히 맞춘 데이터 구조
         data = {
             "drawNo": draw_no,
             "group": group,
@@ -31,14 +31,17 @@ def get_latest_pension_result():
             "bonusNumbers": bonus_numbers
         }
 
-        # 5. JSON 파일로 저장
-        with open('latest_win.json', 'w', encoding='utf-8') as f:
+        # 💡 파일을 현재 폴더에 확실히 생성
+        file_path = os.path.join(os.getcwd(), 'latest_win.json')
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ {draw_no}회차 데이터 생성 완료 (규격 일치)")
+        print(f"✅ 파일 생성 완료: {file_path}")
 
     except Exception as e:
-        print(f"❌ 에러 발생: {e}")
+        print(f"❌ 에러 상세 발생: {e}")
+        # 💡 에러가 나면 억지로 프로세스를 종료시켜서 깃허브가 알게 합니다.
+        exit(1) 
 
 if __name__ == "__main__":
     get_latest_pension_result()
