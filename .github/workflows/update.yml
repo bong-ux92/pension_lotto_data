@@ -2,38 +2,30 @@ name: Update Lottery Numbers
 
 on:
   schedule:
-    - cron: '0 11 * * 4' # 매주 목요일 한국시간 오후 8시
+    - cron: '0 11 * * 4' 
   workflow_dispatch: 
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 💡 권한을 아주 강력하게 설정합니다.
     permissions:
       contents: write
-    
-    # 💡 경고창에 나온 Node 24 관련 설정을 추가해서 경고를 없앱니다.
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
     steps:
       - uses: actions/checkout@v4
-      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-          
       - name: Install dependencies
         run: pip install requests beautifulsoup4
-        
       - name: Run scraper
         run: python scraper.py
-        
-     - name: Commit and Push
+      - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .  # 💡 파일 이름을 직접 적지 않고 전체를 추가하도록 변경
+          git add .
           git commit -m "Update latest lottery numbers" || exit 0
           git push
