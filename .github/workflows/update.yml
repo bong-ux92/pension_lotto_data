@@ -3,15 +3,19 @@ name: Update Lottery Numbers
 on:
   schedule:
     - cron: '0 11 * * 4' # 매주 목요일 한국시간 오후 8시
-  workflow_dispatch: # 수동 실행용
+  workflow_dispatch: 
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 💡 [여기 주목!] 이 3줄이 권한을 강제로 뚫어줍니다.
+    # 💡 권한을 아주 강력하게 설정합니다.
     permissions:
       contents: write
-      
+    
+    # 💡 경고창에 나온 Node 24 관련 설정을 추가해서 경고를 없앱니다.
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
     steps:
       - uses: actions/checkout@v4
       
@@ -31,6 +35,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add latest_win.json
-          # 파일에 변경사항이 있을 때만 커밋
+          # 변경사항이 없어도 에러내지 않고 조용히 넘어가게 설정
           git commit -m "Update latest lottery numbers" || exit 0
           git push
