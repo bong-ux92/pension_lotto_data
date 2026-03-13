@@ -1,31 +1,37 @@
-name: Update Lottery Numbers
+name: Manual Lottery Update
 
 on:
-  schedule:
-    - cron: '0 11 * * 4' 
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      draw_no:
+        description: '회차 (예: 306)'
+        required: true
+        default: '306'
+      win_nums:
+        description: '당첨번호 7자리 (조 포함 7개 숫자만 입력, 예: 1234567)'
+        required: true
+      bonus_nums:
+        description: '보너스번호 6자리 (예: 123456)'
+        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-      - name: Install dependencies
-        run: pip install requests beautifulsoup4
-      - name: Run scraper
-        run: python scraper.py
+      - name: Run manual creator
+        # 입력받은 값을 파이썬에 전달합니다.
+        run: python scraper.py ${{ github.event.inputs.draw_no }} ${{ github.event.inputs.win_nums }} ${{ github.event.inputs.bonus_nums }}
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Update latest lottery numbers" || exit 0
+          git commit -m "Manual update for round ${{ github.event.inputs.draw_no }}" || exit 0
           git push
