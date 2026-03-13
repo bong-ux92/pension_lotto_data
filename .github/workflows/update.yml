@@ -2,28 +2,28 @@ name: Update Lottery Numbers
 
 on:
   schedule:
-    # 한국 시간(KST) 매주 목요일 오후 8시 00분에 실행 (UTC 11:00)
     - cron: '0 11 * * 4' 
-  workflow_dispatch: # 지금 바로 수동으로 실행해볼 수 있는 버튼
+  workflow_dispatch: 
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions: # 💡 코드에 권한을 직접 명시해주는 게 더 확실합니다.
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4 # v3 -> v4로 업데이트
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # v4 -> v5로 업데이트
         with:
           python-version: '3.9'
       - name: Install dependencies
-        run: |
-          pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4
       - name: Run scraper
         run: python scraper.py
       - name: Commit and Push
         run: |
-          git config --global user.name "Lottery Bot"
-          git config --global user.email "bot@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add latest_win.json
           git commit -m "Update latest lottery numbers" || exit 0
           git push
