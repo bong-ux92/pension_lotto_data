@@ -1,0 +1,40 @@
+name: 연금복권 자동 업데이트 (매주 목요일)
+
+on:
+  schedule:
+    # ⏰ 한국 시간(KST) 오후 7시 55분 = 세계 표준시(UTC) 오전 10시 55분
+    # 4는 목요일을 의미합니다. (분 시 일 월 요일)
+    - cron: '55 10 * * 4'
+  workflow_dispatch: # 💡 깃허브 페이지에서 우리가 수동으로 버튼을 눌러서 실행해 볼 수 있게 해주는 옵션!
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 💡 깃허브 봇이 유저님의 JSON 파일을 수정(덮어쓰기)할 수 있도록 허락하는 권한입니다!
+
+    steps:
+      - name: 1. 내 저장소 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: 2. 파이썬 환경 세팅하기
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: 3. 필요 패키지 설치 (크롤링용)
+        # 유저님의 코드에 필요한 패키지가 더 있다면 여기에 띄어쓰기로 추가하세요!
+        run: pip install requests beautifulsoup4 
+
+      - name: 4. 🚀 데이터 업데이트 스크립트 실행!
+        run: python updater.py
+
+      - name: 5. 💾 변경된 JSON 파일 깃허브에 자동 저장 (Commit & Push)
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add assets/data/final_pension_history.json
+          
+          # 파일이 변경되었을 때만 커밋합니다 (에러 방지)
+          git commit -m "✨ [Auto] 최신 연금복권 당첨 번호 자동 업데이트" || echo "업데이트 할 내용이 없습니다."
+          git push
