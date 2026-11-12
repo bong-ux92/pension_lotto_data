@@ -1,5 +1,25 @@
 [
   {
+    "drawNo": 341,
+    "group": 3,
+    "numbers": [
+      1,
+      9,
+      4,
+      9,
+      2,
+      9
+    ],
+    "bonusNumbers": [
+      7,
+      8,
+      3,
+      8,
+      2,
+      0
+    ]
+  },
+  {
     "drawNo": 340,
     "group": 4,
     "numbers": [
